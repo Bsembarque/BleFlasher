@@ -29,11 +29,24 @@
                 HorizontalOptions="Center" />
 
             <Button
-                x:Name="CounterBtn"
-                Text="Click me"
-                SemanticProperties.Hint="Counts the number of times you click"
-                Clicked="OnCounterClicked"
+                x:Name="StartScanning"
+                Text="Start scanning"
+                Clicked="OnStartScanningClicked"
                 HorizontalOptions="Center" />
+
+
+            <Button
+                x:Name="StopScanning"
+                Text="Stop scanning"
+                Clicked="OnStopScanningClicked"
+                HorizontalOptions="Center" />
+
+            <Button
+                x:Name="ConnectDevice1"
+                Text="Connect to device 1"
+                Clicked="OnConnectDevice1Clicked"
+                HorizontalOptions="Center" />
+
 
         </VerticalStackLayout>
     </ScrollView>

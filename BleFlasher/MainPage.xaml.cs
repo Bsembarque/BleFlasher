@@ -2,23 +2,32 @@
 
 public partial class MainPage : ContentPage
 {
-	int count = 0;
+    BleManager scanner;
 
-	public MainPage()
+    public MainPage()
 	{
 		InitializeComponent();
-	}
+        scanner = new BleManager();
 
-	private void OnCounterClicked(object sender, EventArgs e)
+
+    }
+
+	private void OnStartScanningClicked(object sender, EventArgs e)
 	{
-		count++;
-
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
-
-		SemanticScreenReader.Announce(CounterBtn.Text);
+        scanner.startScanning();
 	}
+
+    private void OnStopScanningClicked(object sender, EventArgs e)
+    {
+        scanner.stopScanning();
+    }
+
+    private async void OnConnectDevice1Clicked(object sender, EventArgs e)
+    {
+        var device = scanner.GetDevice(0);
+        await device.connect();
+    }
+
+    
 }
 
