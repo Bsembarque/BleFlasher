@@ -29,10 +29,13 @@ namespace BleFlasher
         {
             await Plugin.BLE.CrossBluetoothLE.Current.Adapter.ConnectToDeviceAsync(device);
 
+
             var service = await device.GetServiceAsync(SERVICE_GUID);
             if (service != null)
             {
                 cmd_charact = await service.GetCharacteristicAsync(COMMAND_GUID);
+
+                cmd_charact.ValueUpdated -= Cmd_charact_ValueUpdated;
                 cmd_charact.ValueUpdated += Cmd_charact_ValueUpdated;
                 await cmd_charact.StartUpdatesAsync();
 
@@ -47,21 +50,27 @@ namespace BleFlasher
 
         private void Cmd_charact_ValueUpdated(object sender, Plugin.BLE.Abstractions.EventArgs.CharacteristicUpdatedEventArgs e)
         {
-            received_frames.Append(new Frame(e.Characteristic.Value));
+            received_frames.Enqueue(new Frame(e.Characteristic.Value));
         }
 
         public async Task<bool> waitForAck(int timeout)
         {
+            Console.WriteLine("WAIT FOR ACK");
             while (timeout > 0)
             {
-                var frame = received_frames.Dequeue();
-                if (frame.adresse == current_request.adresse && frame.command == current_request.command)
+                if (received_frames.Count > 0)
                 {
-                    return frame.status == Frame.COMMAND_STATUS.COMMAND_ACK;
+                    var frame = received_frames.Dequeue();
+                    if (frame.adresse == current_request.adresse && frame.command == current_request.command)
+                    {
+                        Console.WriteLine("ACK RECEIVED");
+                        return frame.status == Frame.COMMAND_STATUS.COMMAND_ACK;
+                    }
                 }
                 await Task.Delay(100);
                 timeout -= 100;
             }
+            Console.WriteLine("ACK NOT RECEIVED");
             return false;
         }
 
@@ -70,16 +79,18 @@ namespace BleFlasher
 
             while (timeout > 0)
             {
-                var frame = received_frames.Dequeue();
-                if (frame.adresse == current_request.adresse && frame.command == current_request.command)
-                {
-                    if (frame.status == Frame.COMMAND_STATUS.COMMAND_ACK)
+                if(received_frames.Count> 0) { 
+                    var frame = received_frames.Dequeue();
+                    if (frame.adresse == current_request.adresse && frame.command == current_request.command)
                     {
-                        return frame.datas;
-                    }
-                    else
-                    {
-                        return null;
+                        if (frame.status == Frame.COMMAND_STATUS.COMMAND_ACK)
+                        {
+                            return frame.datas;
+                        }
+                        else
+                        {
+                            return null;
+                        }
                     }
                 }
                 await Task.Delay(100);
@@ -90,12 +101,17 @@ namespace BleFlasher
 
         public async Task<bool> erase(uint base_adresse, uint size)
         {
-            /* COMMAND ERASE */
-            current_request = new Frame(Frame.COMMAND_LIST.COMMAND_ERASE, base_adresse, size);
+         
 
+            current_request = new Frame(Frame.COMMAND_LIST.COMMAND_ERASE, base_adresse, size);
             await cmd_charact.WriteAsync(((byte[])current_request));
 
-            return await waitForAck(2000);
+            if (await waitForAck(10000) == false)
+            {
+                return false;
+            }
+            return true;
+
         }
 
         public async Task<bool> write(uint base_adresse, byte[] data)
@@ -108,7 +124,7 @@ namespace BleFlasher
 
                 await cmd_charact.WriteAsync(((byte[])current_request));
 
-                if (await waitForAck(200) == false)
+                if (await waitForAck(2000) == false)
                 {
                     return false;
                 }

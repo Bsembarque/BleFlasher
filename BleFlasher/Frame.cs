@@ -7,6 +7,7 @@
         {
             public enum COMMAND_LIST
             {
+                NO_COMMAND,
                 COMMAND_ERASE,
                 COMMAND_WRITE,
                 COMMAND_READ,
@@ -73,8 +74,8 @@
             {
                 this.command = (COMMAND_LIST)(frame[0]&0x0F);
                 this.status = (COMMAND_STATUS)(frame[0]>>4 & 0x0F);
-                this.adresse = (uint)((frame[1] << 24) + (frame[2] << 16) + (frame[3] << 8) + frame[4]);
-                this.size = (uint)((frame[5] << 24) + (frame[6] << 16) + (frame[7] << 8) + frame[8]); ;
+                this.adresse = (uint)((frame[1] << 0) + (frame[2] << 8) + (frame[3] << 16) + (frame[4] << 24));
+                this.size = (uint)((frame[5] << 0) + (frame[6] << 8) + (frame[7] << 16) + (frame[8] << 24));
                 frame.Skip(HEADER_SIZE).ToArray().CopyTo(this.datas,0);
             }
 
@@ -82,15 +83,15 @@
             public static explicit operator byte[](Frame b) {
                 byte[] bytes = new byte[HEADER_SIZE+MAX_PAYLOAD];
                 bytes[0] = ((byte)b.command);
-                bytes[1] = ((byte)(b.adresse >> 24));
-                bytes[2] = ((byte)(b.adresse >> 16));
-                bytes[3] = ((byte)(b.adresse >> 8));
-                bytes[4] = ((byte)b.adresse);
-                bytes[5] = ((byte)(b.adresse >> 24));
-                bytes[6] = ((byte)(b.size >> 16));
-                bytes[7] = ((byte)(b.size >> 8));
-                bytes[8] = ((byte)b.size);
-                if(b.datas != null)
+                bytes[1] = ((byte)(b.adresse >> 0));
+                bytes[2] = ((byte)(b.adresse >> 8));
+                bytes[3] = ((byte)(b.adresse >> 16));
+                bytes[4] = ((byte)(b.adresse >> 24));
+                bytes[5] = ((byte)(b.size >> 0));
+                bytes[6] = ((byte)(b.size >> 8));
+                bytes[7] = ((byte)(b.size >> 16));
+                bytes[8] = ((byte)(b.size >> 24));
+                if (b.datas != null)
                     b.datas.CopyTo(bytes, HEADER_SIZE);
 
                 return bytes;

@@ -56,11 +56,8 @@ namespace BleFlasher
                         swaped_uuid[6] = uuid[7];
                         swaped_uuid[7] = uuid[6];
 
-                        Console.Write("Adv : " + adv.Data.ToHexString() + " Compare to : " + swaped_uuid.ToHexString());
-
                         if (adv.Data.SequenceEqual(swaped_uuid))
                         {
-                            Console.Write("Service found");
 
                             service_found = true;
                             break;
@@ -78,6 +75,8 @@ namespace BleFlasher
 
         private void Adapter_DeviceDiscovered(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
         {
+
+            Console.WriteLine("Device " + e.Device.Name +" found");
             devices.Add(e.Device);
         }
 

@@ -3,6 +3,7 @@
 public partial class MainPage : ContentPage
 {
     BleManager scanner;
+    Device device;
 
     public MainPage()
 	{
@@ -24,10 +25,26 @@ public partial class MainPage : ContentPage
 
     private async void OnConnectDevice1Clicked(object sender, EventArgs e)
     {
-        var device = scanner.GetDevice(0);
+        device = scanner.GetDevice(0);
         await device.connect();
     }
 
+
+
+    private async void OnEraseClicked(object sender, EventArgs e)
+    {
+        await device.erase(0x8008000,0x6000) ;
+    }
+
+
+    private async void OnWriteClicked(object sender, EventArgs e)
+    {
+        byte[] data = new byte[0x6000];
+        Random.Shared.NextBytes(data);
+
+        await device.write(0x8008000, data);
+    }
     
+
 }
 
