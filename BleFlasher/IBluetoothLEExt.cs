@@ -45,8 +45,9 @@ namespace BleFlasher
             BluetoothManager bluetoothManager = (BluetoothManager)Android.App.Application.Context.GetSystemService(Android.Content.Context.BluetoothService);
             bluetoothManager.Adapter.Enable();
             return bluetoothManager.Adapter.IsEnabled;
-#endif
+#else
             return true;
+#endif
         }
     }
 }

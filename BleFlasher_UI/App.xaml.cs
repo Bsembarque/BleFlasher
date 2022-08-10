@@ -1,4 +1,4 @@
-﻿namespace BleFlasher;
+﻿namespace BleFlasher_UI;
 
 public partial class App : Application
 {

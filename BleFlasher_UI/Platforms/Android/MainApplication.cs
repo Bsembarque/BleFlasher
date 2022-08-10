@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace BleFlasher;
+namespace BleFlasher_UI;
 
 [Application]
 public class MainApplication : MauiApplication

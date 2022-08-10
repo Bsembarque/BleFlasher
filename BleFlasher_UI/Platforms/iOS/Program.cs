@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace BleFlasher;
+namespace BleFlasher_UI;
 
 public class Program
 {

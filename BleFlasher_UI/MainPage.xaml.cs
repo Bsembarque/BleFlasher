@@ -1,39 +1,37 @@
-﻿namespace BleFlasher;
+﻿namespace BleFlasher_UI;
+using BleFlasher;
 
 public partial class MainPage : ContentPage
 {
-    Scanner scanner;
-    Device device;
+    BleFlasher flasher;
 
     public MainPage()
 	{
 		InitializeComponent();
-        scanner = new Scanner();
-
-
+        flasher = new BleFlasher();
     }
 
 	private void OnStartScanningClicked(object sender, EventArgs e)
 	{
-        scanner.startScanning();
+        flasher.startScanning();
 	}
 
     private void OnStopScanningClicked(object sender, EventArgs e)
     {
-        scanner.stopScanning();
+        flasher.stopScanning();
     }
 
     private async void OnConnectDevice1Clicked(object sender, EventArgs e)
     {
-        device = scanner.GetDevice(0);
-        await device.connect();
+        var device = flasher.GetDevices()[0];
+        await flasher.connect(device);
     }
 
 
 
     private async void OnEraseClicked(object sender, EventArgs e)
     {
-        await device.erase(0x8008000,0x6000) ;
+        await flasher.erase(0x8008000,0x6000) ;
     }
 
 
@@ -42,7 +40,7 @@ public partial class MainPage : ContentPage
         byte[] data = new byte[0x6000];
         Random.Shared.NextBytes(data);
 
-        await device.write(0x8008000, data);
+        await flasher.write(0x8008000, data);
     }
 
 
@@ -50,7 +48,7 @@ public partial class MainPage : ContentPage
     {
         var file = await FilePicker.Default.PickAsync();
         var filestream = await file.OpenReadAsync();
-        await device.writeBinaryFile(0x8008000, filestream);
+        await flasher.writeBinaryFile(0x8008000, filestream);
     }
     
 

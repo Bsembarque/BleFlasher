@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace BleFlasher;
+namespace BleFlasher_UI;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate

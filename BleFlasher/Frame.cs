@@ -1,8 +1,6 @@
 ﻿namespace BleFlasher
 {
-    internal partial class Device
-    {
-        class Frame
+    internal class Frame
 
         {
             public enum COMMAND_LIST
@@ -97,5 +95,4 @@
                 return bytes;
             }
         }
-    }
-}
+   }

@@ -6,26 +6,26 @@ using System.Threading.Tasks;
 
 namespace BleFlasher
 {
-    internal partial class Device
+    public partial class BleFlasher
     {
         private InTheHand.Bluetooth.BluetoothDevice device;
         private InTheHand.Bluetooth.GattCharacteristic cmd_charact;
 
-        public static Guid SERVICE_GUID = Guid.Parse("42535331-0000-1000-8000-00805F9B34FB");
-        public static Guid COMMAND_GUID = Guid.Parse("42534331-0000-1000-8000-00805F9B34FB");
+        private static Guid SERVICE_GUID = Guid.Parse("42535331-0000-1000-8000-00805F9B34FB");
+        private static Guid COMMAND_GUID = Guid.Parse("42534331-0000-1000-8000-00805F9B34FB");
 
 
-        Frame current_request;
-        Queue<Frame> received_frames;
+        private Frame current_request;
+        private Queue<Frame> received_frames;
 
-        public Device(InTheHand.Bluetooth.BluetoothDevice device)
+        public BleFlasher()
         {
-            this.device = device;
             this.received_frames = new Queue<Frame>();
         }
 
-        public async Task<bool> connect()
+        public async Task<bool> connect(InTheHand.Bluetooth.BluetoothDevice device)
         {
+            this.device = device;
             await device.Gatt.ConnectAsync();
 
 

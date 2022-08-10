@@ -11,16 +11,10 @@ using System.Threading.Tasks;
 namespace BleFlasher
 {
 
-    internal class Scanner
+    public partial class BleFlasher
     {
         List<InTheHand.Bluetooth.BluetoothDevice> devices;
-        InTheHand.Bluetooth.BluetoothLEScan scan;
-
-        public Scanner()
-        {
-
-        }
-  
+        InTheHand.Bluetooth.BluetoothLEScan scan;  
 
         public async void startScanning()
         {
@@ -44,7 +38,7 @@ namespace BleFlasher
             foreach (var s in e.Uuids)
             {
 
-                if (s == Device.SERVICE_GUID)
+                if (s == BleFlasher.SERVICE_GUID)
                 {
 
                     if (!devices.Contains(e.Device)) { 
@@ -68,9 +62,9 @@ namespace BleFlasher
 
         }
 
-        public BleFlasher.Device GetDevice(int idx)
+        public List<InTheHand.Bluetooth.BluetoothDevice> GetDevices()
         {
-            return new BleFlasher.Device(devices[idx]);
+            return devices;
         }
     }
 }

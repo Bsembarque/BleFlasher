@@ -1,4 +1,4 @@
-﻿namespace BleFlasher;
+﻿namespace BleFlasher_UI;
 
 public static class MauiProgram
 {
