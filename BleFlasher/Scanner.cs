@@ -1,7 +1,5 @@
 ﻿
-using Plugin.BLE.Abstractions;
-using Plugin.BLE.Abstractions.Contracts;
-using Plugin.BLE.Abstractions.Extensions;
+using InTheHand;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -13,11 +11,12 @@ using System.Threading.Tasks;
 namespace BleFlasher
 {
 
-    internal class BleManager
+    internal class Scanner
     {
-        List<Plugin.BLE.Abstractions.Contracts.IDevice> devices;
+        List<InTheHand.Bluetooth.BluetoothDevice> devices;
+        InTheHand.Bluetooth.BluetoothLEScan scan;
 
-        public BleManager()
+        public Scanner()
         {
 
         }
@@ -25,70 +24,47 @@ namespace BleFlasher
 
         public async void startScanning()
         {
-            devices = new List<Plugin.BLE.Abstractions.Contracts.IDevice>();
+            devices = new List<InTheHand.Bluetooth.BluetoothDevice>();
 
-            Plugin.BLE.CrossBluetoothLE.Current.RequestPermissions();
-            Plugin.BLE.CrossBluetoothLE.Current.RequestEnable();
+            BluetoothLEExt.RequestPermissions();
+            BluetoothLEExt.RequestEnable();
 
-            Plugin.BLE.CrossBluetoothLE.Current.Adapter.DeviceDiscovered += Adapter_DeviceDiscovered;
-            var iadapter = Plugin.BLE.CrossBluetoothLE.Current.Adapter;
-            iadapter.ScanTimeout = 15000;
-            iadapter.ScanMode = Plugin.BLE.Abstractions.Contracts.ScanMode.Balanced;
-            var scanFilterOptions = new ScanFilterOptions();
+            InTheHand.Bluetooth.Bluetooth.AdvertisementReceived -= Bluetooth_AdvertisementReceived;
+            InTheHand.Bluetooth.Bluetooth.AdvertisementReceived += Bluetooth_AdvertisementReceived;
+            var options = new InTheHand.Bluetooth.BluetoothLEScanOptions();
+            options.AcceptAllAdvertisements = true;
+            options.KeepRepeatedDevices = true;
+            options.Filters.Clear();
+            scan = await InTheHand.Bluetooth.Bluetooth.RequestLEScanAsync(options);
+           }
 
-            Func<IDevice, bool> device_filter = (device) =>
+        private void Bluetooth_AdvertisementReceived(object sender, InTheHand.Bluetooth.BluetoothAdvertisingEvent e)
+        {
+
+            foreach (var s in e.Uuids)
             {
-                bool service_found = false;
-                foreach (var adv in device.AdvertisementRecords)
+
+                if (s == Device.SERVICE_GUID)
                 {
-                    if (adv.Type == Plugin.BLE.Abstractions.AdvertisementRecordType.UuidsComplete128Bit)
-                    {
-                        var uuid = Device.SERVICE_GUID.ToByteArray();
-                        var swaped_uuid = Device.SERVICE_GUID.ToByteArray();
-                        swaped_uuid[0] = uuid[3];
-                        swaped_uuid[1] = uuid[2];
-                        swaped_uuid[2] = uuid[1];
-                        swaped_uuid[3] = uuid[0];
 
-                        swaped_uuid[4] = uuid[5];
-                        swaped_uuid[5] = uuid[4];
-
-                        swaped_uuid[6] = uuid[7];
-                        swaped_uuid[7] = uuid[6];
-
-                        if (adv.Data.SequenceEqual(swaped_uuid))
-                        {
-
-                            service_found = true;
-                            break;
-                        }
-
+                    if (!devices.Contains(e.Device)) { 
+                        Console.WriteLine("Device " + e.Device.Name + " found");
+                        devices.Add(e.Device);
+                        break;
                     }
                 }
-                return service_found;
-
-
-            };
-            scanFilterOptions.ServiceUuids = new[] { Device.SERVICE_GUID};
-            await iadapter.StartScanningForDevicesAsync(allowDuplicatesKey: true, deviceFilter: device_filter);
+            }
         }
 
-        private void Adapter_DeviceDiscovered(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+        public  void stopScanning()
         {
-
-            Console.WriteLine("Device " + e.Device.Name +" found");
-            devices.Add(e.Device);
-        }
-
-        public async void stopScanning()
-        {
-             await Plugin.BLE.CrossBluetoothLE.Current.Adapter.StopScanningForDevicesAsync();
+             scan.Stop();
 
         }
 
         public bool isScanning()
         {
-            return Plugin.BLE.CrossBluetoothLE.Current.Adapter.IsScanning;
+            return scan.Active;
 
         }
 

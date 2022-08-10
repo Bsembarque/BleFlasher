@@ -1,5 +1,4 @@
-﻿using Plugin.BLE.Abstractions.Contracts;
-
+﻿
 #if __ANDROID__
 using Android;
 using Android.Bluetooth;
@@ -8,9 +7,9 @@ using AndroidX.Core.App;
 
 namespace BleFlasher
 {
-    public static class IBluetoothLEExt
+    public static class BluetoothLEExt
     {
-        static public bool RequestPermissions(this IBluetoothLE ible)
+        static public bool RequestPermissions()
         {
             try
             {
@@ -39,14 +38,15 @@ namespace BleFlasher
             return true;
         }
 
-        static public bool RequestEnable(this IBluetoothLE ible)
+        static public bool RequestEnable()
         {
 
 #if __ANDROID__
             BluetoothManager bluetoothManager = (BluetoothManager)Android.App.Application.Context.GetSystemService(Android.Content.Context.BluetoothService);
             bluetoothManager.Adapter.Enable();
+            return bluetoothManager.Adapter.IsEnabled;
 #endif
-            return ible.IsOn;
+            return true;
         }
     }
 }

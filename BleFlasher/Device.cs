@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Plugin.BLE;
 
 namespace BleFlasher
 {
     internal partial class Device
     {
-        private Plugin.BLE.Abstractions.Contracts.IDevice device;
-        private Plugin.BLE.Abstractions.Contracts.ICharacteristic cmd_charact;
+        private InTheHand.Bluetooth.BluetoothDevice device;
+        private InTheHand.Bluetooth.GattCharacteristic cmd_charact;
 
         public static Guid SERVICE_GUID = Guid.Parse("42535331-0000-1000-8000-00805F9B34FB");
         public static Guid COMMAND_GUID = Guid.Parse("42534331-0000-1000-8000-00805F9B34FB");
@@ -19,7 +18,7 @@ namespace BleFlasher
         Frame current_request;
         Queue<Frame> received_frames;
 
-        public Device(Plugin.BLE.Abstractions.Contracts.IDevice device)
+        public Device(InTheHand.Bluetooth.BluetoothDevice device)
         {
             this.device = device;
             this.received_frames = new Queue<Frame>();
@@ -27,31 +26,37 @@ namespace BleFlasher
 
         public async Task<bool> connect()
         {
-            await Plugin.BLE.CrossBluetoothLE.Current.Adapter.ConnectToDeviceAsync(device);
+            await device.Gatt.ConnectAsync();
 
 
-            var service = await device.GetServiceAsync(SERVICE_GUID);
+            var service = await device.Gatt.GetPrimaryServiceAsync(SERVICE_GUID);
             if (service != null)
             {
                 cmd_charact = await service.GetCharacteristicAsync(COMMAND_GUID);
 
-                cmd_charact.ValueUpdated -= Cmd_charact_ValueUpdated;
-                cmd_charact.ValueUpdated += Cmd_charact_ValueUpdated;
-                await cmd_charact.StartUpdatesAsync();
+                cmd_charact.CharacteristicValueChanged -= Cmd_charact_CharacteristicValueChanged;
+                cmd_charact.CharacteristicValueChanged += Cmd_charact_CharacteristicValueChanged;
+                await cmd_charact.StartNotificationsAsync();
 
             }
             return cmd_charact != null;
         }
 
-        public async void disconnect()
+        private void Cmd_charact_CharacteristicValueChanged(object sender, InTheHand.Bluetooth.GattCharacteristicValueChangedEventArgs e)
         {
-            await Plugin.BLE.CrossBluetoothLE.Current.Adapter.DisconnectDeviceAsync(device);
+            received_frames.Enqueue(new Frame(e.Value));
         }
 
-        private void Cmd_charact_ValueUpdated(object sender, Plugin.BLE.Abstractions.EventArgs.CharacteristicUpdatedEventArgs e)
+        public void disconnect()
         {
-            received_frames.Enqueue(new Frame(e.Characteristic.Value));
+            device.Gatt.Disconnect();
         }
+
+        private Task send_Frame(Frame f)
+        {
+            return cmd_charact.WriteValueWithoutResponseAsync((byte[])f);
+        }
+
 
         public async Task<bool> waitForAck(int timeout)
         {
@@ -104,7 +109,7 @@ namespace BleFlasher
          
 
             current_request = new Frame(Frame.COMMAND_LIST.COMMAND_ERASE, base_adresse, size);
-            await cmd_charact.WriteAsync(((byte[])current_request));
+            await send_Frame(current_request);
 
             if (await waitForAck(10000) == false)
             {
@@ -122,7 +127,7 @@ namespace BleFlasher
 
                 current_request = new Frame(Frame.COMMAND_LIST.COMMAND_WRITE, base_adresse, chunk);
 
-                await cmd_charact.WriteAsync(((byte[])current_request));
+                await send_Frame(current_request);
 
                 if (await waitForAck(2000) == false)
                 {
@@ -150,7 +155,7 @@ namespace BleFlasher
                     current_request = new Frame(Frame.COMMAND_LIST.COMMAND_READ, base_adresse, (uint)(i - size));
                 }
 
-                await cmd_charact.WriteAsync(((byte[])current_request));
+                await send_Frame(current_request);
 
                 // WAIT FOR DATA
                 var incomming_data = await waitForData(200);
@@ -173,7 +178,7 @@ namespace BleFlasher
             /* COMMAND RESET */
             current_request = new Frame(Frame.COMMAND_LIST.COMMMAND_RESET);
 
-            await cmd_charact.WriteAsync(((byte[])current_request));
+            await send_Frame(current_request);
 
             return await waitForAck(2000);
         }
@@ -182,7 +187,7 @@ namespace BleFlasher
             /* COMMAND start */
             current_request = new Frame(Frame.COMMAND_LIST.COMMAND_START, addresse);
 
-            await cmd_charact.WriteAsync(((byte[])current_request));
+            await send_Frame(current_request);
 
             return await waitForAck(2000);
         }
@@ -192,10 +197,29 @@ namespace BleFlasher
             /* COMMAND start */
             current_request = new Frame(Frame.COMMAND_LIST.COMMAND_START);
 
-            await cmd_charact.WriteAsync(((byte[])current_request));
+            await send_Frame(current_request);
 
             return await waitForAck(2000);
 
+        }
+
+        public async Task<bool> writeBinaryFile(uint start_adress, Stream filestream, bool erasebefore=true)
+        {
+            var filedata = new byte[filestream.Length];
+            filestream.Read(filedata);
+            if (erasebefore)
+            {
+                await erase(start_adress, ((uint)filedata.Length));
+            }
+            return await write(start_adress, filedata);
+        }
+
+        public async void writeHexFile(uint start_adress, Stream filestream, bool erasebefore)
+        {
+            var filedata = new byte[filestream.Length];
+            filestream.Read(filedata);
+            await erase(start_adress, ((uint)filedata.Length));
+            await write(start_adress, filedata);
         }
     }
 }

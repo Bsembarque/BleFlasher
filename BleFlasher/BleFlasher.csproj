@@ -50,21 +50,7 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
-	  <PackageReference Include="Plugin.BLE.Net">
-	    <Version>3.0.0-alpha.1</Version>
-	  </PackageReference>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0-ios'">
-	  <PackageReference Include="Plugin.BLE.Net">
-	    <Version>3.0.0-alpha.1</Version>
-	  </PackageReference>
-	</ItemGroup>
-
-	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-		<PackageReference Include="Plugin.BLE">
-			<Version>2.2.0-pre5</Version>
-		</PackageReference>
+	<ItemGroup>
+	  <PackageReference Include="InTheHand.BluetoothLE" Version="4.0.24" />
 	</ItemGroup>
 </Project>

@@ -2,13 +2,13 @@
 
 public partial class MainPage : ContentPage
 {
-    BleManager scanner;
+    Scanner scanner;
     Device device;
 
     public MainPage()
 	{
 		InitializeComponent();
-        scanner = new BleManager();
+        scanner = new Scanner();
 
 
     }
@@ -43,6 +43,14 @@ public partial class MainPage : ContentPage
         Random.Shared.NextBytes(data);
 
         await device.write(0x8008000, data);
+    }
+
+
+    private async void OnSelectFileClicked(object sender, EventArgs e)
+    {
+        var file = await FilePicker.Default.PickAsync();
+        var filestream = await file.OpenReadAsync();
+        await device.writeBinaryFile(0x8008000, filestream);
     }
     
 

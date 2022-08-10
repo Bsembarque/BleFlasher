@@ -39,6 +39,15 @@
                 Text="Write"
                 Clicked="OnWriteClicked"
                 HorizontalOptions="Center" />
+
+
+            <Button
+                x:Name="SelectFile"
+                Text="Select file"
+                Clicked="OnSelectFileClicked"
+                HorizontalOptions="Center" />
+            
+            
         </VerticalStackLayout>
     </ScrollView>
 
