@@ -4,51 +4,64 @@
              x:Class="BleFlasher_UI.MainPage">
 
     <ScrollView>
-        <VerticalStackLayout
-            Spacing="25"
-            Padding="30,0"
-            VerticalOptions="Center">
 
-            <Button
-                x:Name="StartScanning"
-                Text="Start scanning"
-                Clicked="OnStartScanningClicked"
-                HorizontalOptions="Center" />
+            <StackLayout Margin="20" Padding="20">
+            <HorizontalStackLayout Margin="20">
+                <Button
+            x:Name="StartScanning"
+            Text="Start scanning"
+            Clicked="OnStartScanningClicked"
+            HorizontalOptions="Center" />
 
 
-            <Button
-                x:Name="StopScanning"
-                Text="Stop scanning"
-                Clicked="OnStopScanningClicked"
-                HorizontalOptions="Center" />
+                <Button
+            x:Name="StopScanning"
+            Text="Stop scanning"
+            Clicked="OnStopScanningClicked"
+            HorizontalOptions="Center" />
+                <Picker 
+            x:Name="PickerScan"
+                    Title="Scanned device"
+                    MinimumWidthRequest="120"
+            HorizontalOptions="CenterAndExpand">
+                </Picker>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout>
+        
+                <Button
+            x:Name="ConnectDevice"
+            Text="Connect"
+            Clicked="OnConnectClicked"
+            HorizontalOptions="Center" />
 
-            <Button
-                x:Name="ConnectDevice1"
-                Text="Connect to device 1"
-                Clicked="OnConnectDevice1Clicked"
-                HorizontalOptions="Center" />
+                <Button
+            x:Name="DisconnectDevice"
+            Text="Disconnect"
+            Clicked="OnDisconnectClicked"
+            HorizontalOptions="Center" />
+            </HorizontalStackLayout>
 
-            <Button
+
+                    <Button
                 x:Name="Erase"
                 Text="Erase"
                 Clicked="OnEraseClicked"
                 HorizontalOptions="Center" />
 
-            <Button
+                <Button
                 x:Name="Write"
                 Text="Write"
                 Clicked="OnWriteClicked"
                 HorizontalOptions="Center" />
 
 
-            <Button
+                <Button
                 x:Name="SelectFile"
                 Text="Select file"
                 Clicked="OnSelectFileClicked"
                 HorizontalOptions="Center" />
-            
-            
-        </VerticalStackLayout>
+            </StackLayout>
+
     </ScrollView>
 
 </ContentPage>

@@ -15,8 +15,8 @@ namespace BleFlasher
         private static Guid COMMAND_GUID = Guid.Parse("42534331-0000-1000-8000-00805F9B34FB");
 
 
-        private Frame current_request;
-        private Queue<Frame> received_frames;
+        Frame current_request;
+        Queue<Frame> received_frames;
 
         public BleFlasher()
         {
@@ -45,6 +45,11 @@ namespace BleFlasher
         private void Cmd_charact_CharacteristicValueChanged(object sender, InTheHand.Bluetooth.GattCharacteristicValueChangedEventArgs e)
         {
             received_frames.Enqueue(new Frame(e.Value));
+        }
+
+        public bool isConnected()
+        {
+            return device.Gatt.IsConnected;
         }
 
         public void disconnect()

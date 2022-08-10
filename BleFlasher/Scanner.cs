@@ -10,15 +10,16 @@ using System.Threading.Tasks;
 
 namespace BleFlasher
 {
+    using BleDevice = InTheHand.Bluetooth.BluetoothDevice;
 
     public partial class BleFlasher
     {
-        List<InTheHand.Bluetooth.BluetoothDevice> devices;
-        InTheHand.Bluetooth.BluetoothLEScan scan;  
+        List<BleDevice> devices;
+        private InTheHand.Bluetooth.BluetoothLEScan scan;  
 
         public async void startScanning()
         {
-            devices = new List<InTheHand.Bluetooth.BluetoothDevice>();
+            devices = new List<BleDevice>();
 
             BluetoothLEExt.RequestPermissions();
             BluetoothLEExt.RequestEnable();
@@ -42,7 +43,7 @@ namespace BleFlasher
                 {
 
                     if (!devices.Contains(e.Device)) { 
-                        Console.WriteLine("Device " + e.Device.Name + " found");
+                        Console.WriteLine("Device " + e.Name + " found");
                         devices.Add(e.Device);
                         break;
                     }
@@ -62,9 +63,9 @@ namespace BleFlasher
 
         }
 
-        public List<InTheHand.Bluetooth.BluetoothDevice> GetDevices()
+        public BleDevice[] GetDevices()
         {
-            return devices;
+            return devices.ToArray();
         }
     }
 }
