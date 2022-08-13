@@ -5,63 +5,133 @@
 
     <ScrollView>
 
-            <StackLayout Margin="20" Padding="20">
-            <HorizontalStackLayout Margin="20">
-                <Button
+            <VerticalStackLayout Margin="20" Padding="20">
+            <HorizontalStackLayout>
+                <Frame  x:Name="ScanLayout">
+
+                    <VerticalStackLayout HorizontalOptions="CenterAndExpand">
+                    <Label Text="SCANNER"
+           FontSize="14"
+           FontAttributes="Bold" />
+                    <BoxView Color="Gray"
+             HeightRequest="2"
+             HorizontalOptions="Fill" />
+                    <HorizontalStackLayout>
+                    <Button
             x:Name="StartScanning"
             Text="Start scanning"
             Clicked="OnStartScanningClicked"
             HorizontalOptions="Center" />
 
-
-                <Button
+                        <Button
             x:Name="StopScanning"
             Text="Stop scanning"
             Clicked="OnStopScanningClicked"
             HorizontalOptions="Center" />
-                <Picker 
+
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+
+                <Frame  x:Name="ConnectionLayout" >
+
+                    <VerticalStackLayout  HorizontalOptions="CenterAndExpand">
+                    <Label Text="CONNECTION"
+           FontSize="14"
+           FontAttributes="Bold" />
+                    <BoxView Color="Gray"
+             HeightRequest="2"
+             HorizontalOptions="Fill" />
+                    <HorizontalStackLayout>
+
+                        <Picker 
             x:Name="PickerScan"
                     Title="Scanned device"
-                    MinimumWidthRequest="120"
+                    MinimumWidthRequest="250"
             HorizontalOptions="CenterAndExpand">
-                </Picker>
-            </HorizontalStackLayout>
-            <HorizontalStackLayout>
-        
-                <Button
+                        </Picker>
+                        
+                        <Button
             x:Name="ConnectDevice"
             Text="Connect"
             Clicked="OnConnectClicked"
             HorizontalOptions="Center" />
 
-                <Button
+                        <Button
             x:Name="DisconnectDevice"
             Text="Disconnect"
             Clicked="OnDisconnectClicked"
             HorizontalOptions="Center" />
+
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
             </HorizontalStackLayout>
 
+            <HorizontalStackLayout x:Name="ConnectedLayout" IsVisible="False" >
+                <Frame HorizontalOptions="Fill">
+                <VerticalStackLayout>
+                    <Label Text="WRITE"
+           FontSize="14"
+           FontAttributes="Bold" />
+                        <BoxView Color="Gray"
+             HeightRequest="2"
+             HorizontalOptions="Fill" />
+                
+                <Label Text="File name" />
 
-                    <Button
-                x:Name="Erase"
-                Text="Erase"
-                Clicked="OnEraseClicked"
-                HorizontalOptions="Center" />
-
-                <Button
-                x:Name="Write"
-                Text="Write"
-                Clicked="OnWriteClicked"
-                HorizontalOptions="Center" />
-
+                <Entry x:Name="FileName" />
 
                 <Button
                 x:Name="SelectFile"
                 Text="Select file"
                 Clicked="OnSelectFileClicked"
                 HorizontalOptions="Center" />
-            </StackLayout>
+                <Label Text="Start address" />
+                <Entry x:Name="StartAddress" >
 
+                </Entry>
+
+                <Button
+                x:Name="Write"
+                Text="Write"
+                Clicked="OnWriteClicked"
+                HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Frame>
+
+                <Frame HorizontalOptions="Fill">
+                    <VerticalStackLayout>
+                        <Label Text="READ"
+           FontSize="14"
+           FontAttributes="Bold" />
+                        <BoxView Color="Gray"
+             HeightRequest="2"
+             HorizontalOptions="Fill" />
+
+                        <Label Text="File name" />
+
+                        <Entry x:Name="FileNameR" />
+
+                        <Button
+                x:Name="SelectFileR"
+                Text="Select file"
+                Clicked="OnSelectFileClicked"
+                HorizontalOptions="Center" />
+                        
+                        <Label Text="Start address" />
+                        <Entry x:Name="StartAddressR"/>
+                        <Entry x:Name="SizeR" />
+
+                        <Button
+                x:Name="Read"
+                Text="Read"
+                HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
     </ScrollView>
 
 </ContentPage>

@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if ANDROID
+using Android.Locations;
+#endif
+using HexIO;
 
 namespace BleFlasher
 {
@@ -49,12 +54,27 @@ namespace BleFlasher
 
         public bool isConnected()
         {
-            return device.Gatt.IsConnected;
+            try
+            {
+                return device.Gatt.IsConnected;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            return false;
         }
 
         public void disconnect()
         {
-            device.Gatt.Disconnect();
+            try
+            {
+                device.Gatt.Disconnect();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
 
         private Task send_Frame(Frame f)
@@ -219,12 +239,60 @@ namespace BleFlasher
             return await write(start_adress, filedata);
         }
 
-        public async void writeHexFile(uint start_adress, Stream filestream, bool erasebefore)
+        public bool isBinaryFile(Stream filestream)
         {
             var filedata = new byte[filestream.Length];
             filestream.Read(filedata);
-            await erase(start_adress, ((uint)filedata.Length));
-            await write(start_adress, filedata);
+            filestream.Position = 0;
+            foreach (var d in filedata)
+            {
+                if(!char.IsAscii(((char)d))){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public async void writeHexFile(Stream filestream)
+        {
+            uint start_address = UInt32.MaxValue;
+            uint end_address = UInt32.MinValue;
+
+            filestream.Position = 0;
+            using (IntelHexReader hexReader = new IntelHexReader(filestream))
+            {
+                uint address;
+                IList<byte> data;
+  
+                // NEXT LINES
+                while (hexReader.Read(out address, out data))
+                {
+                    if (start_address > address)
+                    {
+                        start_address = address;
+                    }
+
+                    if (end_address < address + ((uint)data.Count))
+                    {
+                        end_address = address + ((uint)data.Count);
+                    }
+                }
+
+                byte[] fulldata = new byte[end_address - start_address];
+                Array.Fill<byte>(fulldata, 0xFF);
+                filestream.Position = 0;
+
+                // NEXT LINES
+                while (hexReader.Read(out address, out data))
+                {
+                    data.CopyTo(fulldata, ((int)(address - start_address)));
+                }
+
+                await erase(start_address, ((uint)fulldata.Length));
+                await write(start_address, fulldata.ToArray());
+
+            }
+
         }
     }
 }

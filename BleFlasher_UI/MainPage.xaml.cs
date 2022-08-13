@@ -4,6 +4,7 @@ using BleFlasher;
 public partial class MainPage : ContentPage
 {
     BleFlasher flasher;
+    Stream filestream;
 
     public MainPage()
 	{
@@ -11,17 +12,18 @@ public partial class MainPage : ContentPage
         flasher = new BleFlasher();
         StopScanning.IsVisible = false;
         ConnectDevice.IsVisible = false;
-        DisconnectDevice.IsVisible = false;
     }
 
 	private void OnStartScanningClicked(object sender, EventArgs e)
 	{
+        this.IsBusy = true;
         flasher.startScanning();
 
         StartScanning.IsVisible = false;
         StopScanning.IsVisible = true;
         ConnectDevice.IsVisible = false;
-        DisconnectDevice.IsVisible = false;
+
+        this.IsBusy = false;
     }
 
     private void OnStopScanningClicked(object sender, EventArgs e)
@@ -51,55 +53,66 @@ public partial class MainPage : ContentPage
 
     private async void OnConnectClicked(object sender, EventArgs e)
     {
+        this.IsBusy = true;
+
         var device = flasher.GetDevices()[PickerScan.SelectedIndex];
         if(await flasher.connect(device))
         {
-            PickerScan.IsVisible = false;
-            ConnectDevice.IsVisible = false;
-            DisconnectDevice.IsVisible = true;
-            StartScanning.IsVisible = false;
-            StopScanning.IsVisible = false;
+ 
+            ConnectedLayout.IsVisible = true;
         }
         else
         {
-            PickerScan.IsVisible = true;
-            ConnectDevice.IsVisible = true;
-            DisconnectDevice.IsVisible = false;
+            ConnectedLayout.IsVisible = false;
         }
-
+        this.IsBusy = false;
     }
     private void OnDisconnectClicked(object sender, EventArgs e)
     {
         flasher.disconnect();
-        StartScanning.IsVisible = true;
-        PickerScan.IsVisible = true;
-        ConnectDevice.IsVisible = true;
-        DisconnectDevice.IsVisible = false;
-    }
-
-
-
-    private async void OnEraseClicked(object sender, EventArgs e)
-    {
-        await flasher.erase(0x8008000,0x6000) ;
+        ConnectedLayout.IsVisible = false;
     }
 
 
     private async void OnWriteClicked(object sender, EventArgs e)
     {
-        byte[] data = new byte[0x6000];
-        Random.Shared.NextBytes(data);
+        this.IsBusy = true;
 
-        await flasher.write(0x8008000, data);
+        if (flasher.isBinaryFile(filestream))
+        {
+            await flasher.writeBinaryFile(uint.Parse(StartAddress.Text), filestream);
+        }
+        else
+        {
+            flasher.writeHexFile(filestream);
+        }
+        this.IsBusy = false;
     }
 
 
     private async void OnSelectFileClicked(object sender, EventArgs e)
     {
-        var file = await FilePicker.Default.PickAsync();
-        var filestream = await file.OpenReadAsync();
-        await flasher.writeBinaryFile(0x8008000, filestream);
+        this.IsBusy = true;
+
+        var selected_file = await FilePicker.Default.PickAsync();
+        FileName.Text = selected_file.FullPath;
+        filestream = await selected_file.OpenReadAsync();
+        if (!flasher.isBinaryFile(filestream))
+        {
+            StartAddress.IsEnabled = false;
+            StartAddress.Text = "AUTO";
+        }
+        else
+        {
+            StartAddress.IsEnabled = true;
+            if(StartAddress.Text == "AUTO")
+            {
+                StartAddress.Text = "";
+            }
+        }
+        this.IsBusy = false;
     }
+
     
 
 }
