@@ -45,6 +45,7 @@ namespace BleFlasher
                     if (!devices.Contains(e.Device)) { 
                         Console.WriteLine("Device " + e.Name + " found");
                         devices.Add(e.Device);
+                        DiscoveredDevice.Invoke(this, e.Device);
                         break;
                     }
                 }
@@ -57,11 +58,15 @@ namespace BleFlasher
 
         }
 
+        public event EventHandler<BleDevice> DiscoveredDevice;
+
         public bool isScanning()
         {
             return scan.Active;
 
         }
+
+
 
         public BleDevice[] GetDevices()
         {

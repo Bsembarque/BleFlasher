@@ -17,6 +17,11 @@ public partial class MainPage : ContentPage
 	private void OnStartScanningClicked(object sender, EventArgs e)
 	{
         this.IsBusy = true;
+
+
+        flasher.DiscoveredDevice -= Flasher_DiscoveredDevice;
+        flasher.DiscoveredDevice += Flasher_DiscoveredDevice;
+
         flasher.startScanning();
 
         StartScanning.IsVisible = false;
@@ -26,25 +31,16 @@ public partial class MainPage : ContentPage
         this.IsBusy = false;
     }
 
+    private void Flasher_DiscoveredDevice(object sender, InTheHand.Bluetooth.BluetoothDevice e)
+    {
+        PickerScan.Items.Add(e.ToString());
+    }
+
     private void OnStopScanningClicked(object sender, EventArgs e)
     {
         flasher.stopScanning();
 
         var devices = flasher.GetDevices();
-
-
-        PickerScan.Items.Clear();
-
-        foreach (var device in devices)
-        {
-            string item = device.Name + "(" + device.Id + ")";
-
-            if (!PickerScan.Items.Contains(item))
-            {
-                PickerScan.Items.Add(item);
-            }
-        }
-        PickerScan.SelectedIndex = 0;
 
         StartScanning.IsVisible = true;
         StopScanning.IsVisible = false;

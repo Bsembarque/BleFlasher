@@ -45,14 +45,19 @@
              HorizontalOptions="Fill" />
                     <HorizontalStackLayout>
 
-                        <Picker 
+                            <Picker 
             x:Name="PickerScan"
                     Title="Scanned device"
-                    MinimumWidthRequest="250"
+                    WidthRequest="250"
             HorizontalOptions="CenterAndExpand">
-                        </Picker>
-                        
-                        <Button
+
+                                <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                    </x:Array>
+                                </Picker.ItemsSource>
+                            </Picker>
+
+                            <Button
             x:Name="ConnectDevice"
             Text="Connect"
             Clicked="OnConnectClicked"
@@ -70,7 +75,7 @@
             </HorizontalStackLayout>
 
             <HorizontalStackLayout x:Name="ConnectedLayout" IsVisible="False" >
-                <Frame HorizontalOptions="Fill">
+                <Frame>
                 <VerticalStackLayout>
                     <Label Text="WRITE"
            FontSize="14"
@@ -101,7 +106,7 @@
                 </VerticalStackLayout>
             </Frame>
 
-                <Frame HorizontalOptions="Fill">
+                <Frame>
                     <VerticalStackLayout>
                         <Label Text="READ"
            FontSize="14"
