@@ -14,42 +14,57 @@ public partial class MainPage : ContentPage
         ConnectDevice.IsVisible = false;
     }
 
-	private void OnStartScanningClicked(object sender, EventArgs e)
-	{
-        this.IsBusy = true;
+    private void OnStartScanningClicked(object sender, EventArgs e)
+    {
 
 
         flasher.DiscoveredDevice -= Flasher_DiscoveredDevice;
-        flasher.DiscoveredDevice += Flasher_DiscoveredDevice;
+        flasher.ProgressionUpdated -= Flasher_ProgressionUpdated;
 
-        flasher.startScanning();
+
 
         StartScanning.IsVisible = false;
         StopScanning.IsVisible = true;
         ConnectDevice.IsVisible = false;
 
-        this.IsBusy = false;
+        PickerScan.Items.Clear();
+
+
+        flasher.DiscoveredDevice += Flasher_DiscoveredDevice;
+        flasher.ProgressionUpdated += Flasher_ProgressionUpdated;
+
+        flasher.startScanning();
+
     }
 
-    private void Flasher_DiscoveredDevice(object sender, InTheHand.Bluetooth.BluetoothDevice e)
+    private void Flasher_ProgressionUpdated(object sender, double e)
     {
-        PickerScan.Items.Add(e.ToString());
+
+            TransfertProgress.Progress = e;
+    }
+
+    private void Flasher_DiscoveredDevice(object sender, InTheHand.Bluetooth.BluetoothDevice d)
+    {
+        Dispatcher.Dispatch(() =>
+        {
+            ConnectDevice.IsVisible = true;
+        });
+        string name = d.Name + "(" + d.Id + ")";
+        PickerScan.Items.Add(name);
+        PickerScan.SelectedIndex = 0;
+
     }
 
     private void OnStopScanningClicked(object sender, EventArgs e)
     {
         flasher.stopScanning();
 
-        var devices = flasher.GetDevices();
-
         StartScanning.IsVisible = true;
         StopScanning.IsVisible = false;
-        ConnectDevice.IsVisible = true;
     }
 
     private async void OnConnectClicked(object sender, EventArgs e)
     {
-        this.IsBusy = true;
 
         var device = flasher.GetDevices()[PickerScan.SelectedIndex];
         if(await flasher.connect(device))
@@ -61,7 +76,6 @@ public partial class MainPage : ContentPage
         {
             ConnectedLayout.IsVisible = false;
         }
-        this.IsBusy = false;
     }
     private void OnDisconnectClicked(object sender, EventArgs e)
     {
@@ -72,23 +86,34 @@ public partial class MainPage : ContentPage
 
     private async void OnWriteClicked(object sender, EventArgs e)
     {
-        this.IsBusy = true;
 
         if (flasher.isBinaryFile(filestream))
         {
-            await flasher.writeBinaryFile(uint.Parse(StartAddress.Text), filestream);
+            if(StartAddress.Text != null)
+            {
+                uint start_address = 0;
+                if (StartAddress.Text.Contains("x"))
+                {
+                    start_address = Convert.ToUInt32(StartAddress.Text, 16);
+                }
+                else
+                {
+                    start_address = Convert.ToUInt32(StartAddress.Text, 10);
+                }
+                await flasher.writeBinaryFile(start_address, filestream);
+            }
         }
         else
         {
             flasher.writeHexFile(filestream);
         }
-        this.IsBusy = false;
+
     }
 
 
     private async void OnSelectFileClicked(object sender, EventArgs e)
     {
-        this.IsBusy = true;
+
 
         var selected_file = await FilePicker.Default.PickAsync();
         FileName.Text = selected_file.FullPath;
@@ -106,7 +131,7 @@ public partial class MainPage : ContentPage
                 StartAddress.Text = "";
             }
         }
-        this.IsBusy = false;
+
     }
 
     

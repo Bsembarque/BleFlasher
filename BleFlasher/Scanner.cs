@@ -1,5 +1,6 @@
 ﻿
 using InTheHand;
+using InTheHand.Bluetooth;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -23,10 +24,10 @@ namespace BleFlasher
 
             BluetoothLEExt.RequestPermissions();
             BluetoothLEExt.RequestEnable();
-
             InTheHand.Bluetooth.Bluetooth.AdvertisementReceived -= Bluetooth_AdvertisementReceived;
+
             InTheHand.Bluetooth.Bluetooth.AdvertisementReceived += Bluetooth_AdvertisementReceived;
-            var options = new InTheHand.Bluetooth.BluetoothLEScanOptions();
+            BluetoothLEScanOptions options = new InTheHand.Bluetooth.BluetoothLEScanOptions();
             options.AcceptAllAdvertisements = true;
             options.KeepRepeatedDevices = true;
             options.Filters.Clear();
@@ -54,7 +55,7 @@ namespace BleFlasher
 
         public  void stopScanning()
         {
-             scan.Stop();
+            scan.Stop();
 
         }
 

@@ -19,6 +19,8 @@ namespace BleFlasher
         private static Guid SERVICE_GUID = Guid.Parse("42535331-0000-1000-8000-00805F9B34FB");
         private static Guid COMMAND_GUID = Guid.Parse("42534331-0000-1000-8000-00805F9B34FB");
 
+        private double totalsize;
+        private double transferedsize;
 
         Frame current_request;
         Queue<Frame> received_frames;
@@ -131,7 +133,10 @@ namespace BleFlasher
 
         public async Task<bool> erase(uint base_adresse, uint size)
         {
-         
+
+            totalsize = size;
+            transferedsize = 0;
+            ProgressionUpdated.Invoke(this, getProgression());
 
             current_request = new Frame(Frame.COMMAND_LIST.COMMAND_ERASE, base_adresse, size);
             await send_Frame(current_request);
@@ -140,12 +145,19 @@ namespace BleFlasher
             {
                 return false;
             }
+
+            transferedsize = size;
+            ProgressionUpdated.Invoke(this, getProgression());
             return true;
 
         }
 
         public async Task<bool> write(uint base_adresse, byte[] data)
         {
+            totalsize = (uint)data.Length;
+            transferedsize = 0;
+            ProgressionUpdated.Invoke(this, getProgression());
+
             var chunks = data.Chunk(128);
             foreach (var chunk in chunks) // for each chunk
             {
@@ -159,6 +171,8 @@ namespace BleFlasher
                     return false;
                 }
                 base_adresse += (uint)chunk.Length;
+                transferedsize += (uint)chunk.Length;
+                ProgressionUpdated.Invoke(this, getProgression());
             }
             return true;
 
@@ -167,6 +181,10 @@ namespace BleFlasher
         public async Task<byte[]> read(uint base_adresse, uint size)
         {
             List<byte> data = new List<byte>();
+
+            totalsize = (uint)size;
+            transferedsize = 0;
+            ProgressionUpdated.Invoke(this, getProgression());
 
             /* COMMAND read */
             for (int i = 0; i < size; i++)
@@ -187,6 +205,8 @@ namespace BleFlasher
                 if (incomming_data != null)
                 {
                     data.AddRange(incomming_data);
+                    transferedsize += ((uint)incomming_data.Length);
+                    ProgressionUpdated.Invoke(this, getProgression());
                 }
                 else
                 {
@@ -267,14 +287,17 @@ namespace BleFlasher
                 // NEXT LINES
                 while (hexReader.Read(out address, out data))
                 {
-                    if (start_address > address)
+                    if (data.Count > 0)
                     {
-                        start_address = address;
-                    }
+                        if (start_address > address)
+                        {
+                            start_address = address;
+                        }
 
-                    if (end_address < address + ((uint)data.Count))
-                    {
-                        end_address = address + ((uint)data.Count);
+                        if (end_address < address + ((uint)data.Count))
+                        {
+                            end_address = address + ((uint)data.Count);
+                        }
                     }
                 }
 
@@ -285,7 +308,10 @@ namespace BleFlasher
                 // NEXT LINES
                 while (hexReader.Read(out address, out data))
                 {
-                    data.CopyTo(fulldata, ((int)(address - start_address)));
+                    if (data.Count > 0)
+                    {
+                        data.CopyTo(fulldata, ((int)(address - start_address)));
+                    }
                 }
 
                 await erase(start_address, ((uint)fulldata.Length));
@@ -294,5 +320,17 @@ namespace BleFlasher
             }
 
         }
+        public uint getSpeedTransfert()
+        {
+            return 0;
+        }
+
+        public double getProgression()
+        {
+            return transferedsize /totalsize;
+        }
+
+        public event EventHandler<double> ProgressionUpdated;
     }
+
 }

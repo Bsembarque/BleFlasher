@@ -5,34 +5,33 @@
 
     <ScrollView>
 
-            <VerticalStackLayout Margin="20" Padding="20">
+            <VerticalStackLayout>
             <HorizontalStackLayout>
                 <Frame  x:Name="ScanLayout">
 
                     <VerticalStackLayout HorizontalOptions="CenterAndExpand">
-                    <Label Text="SCANNER"
+                        <Label Text="SCANNER"
            FontSize="14"
            FontAttributes="Bold" />
-                    <BoxView Color="Gray"
+                        <BoxView
              HeightRequest="2"
              HorizontalOptions="Fill" />
-                    <HorizontalStackLayout>
-                    <Button
+                        <HorizontalStackLayout>
+                            <Button
             x:Name="StartScanning"
             Text="Start scanning"
             Clicked="OnStartScanningClicked"
             HorizontalOptions="Center" />
 
-                        <Button
+                            <Button
             x:Name="StopScanning"
             Text="Stop scanning"
             Clicked="OnStopScanningClicked"
             HorizontalOptions="Center" />
 
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
-
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
 
                 <Frame  x:Name="ConnectionLayout" >
 
@@ -40,7 +39,7 @@
                     <Label Text="CONNECTION"
            FontSize="14"
            FontAttributes="Bold" />
-                    <BoxView Color="Gray"
+                    <BoxView
              HeightRequest="2"
              HorizontalOptions="Fill" />
                     <HorizontalStackLayout>
@@ -50,11 +49,8 @@
                     Title="Scanned device"
                     WidthRequest="250"
             HorizontalOptions="CenterAndExpand">
-
-                                <Picker.ItemsSource>
-                                    <x:Array Type="{x:Type x:String}">
-                                    </x:Array>
-                                </Picker.ItemsSource>
+                                <Picker.Items>
+                                </Picker.Items>
                             </Picker>
 
                             <Button
@@ -80,7 +76,7 @@
                     <Label Text="WRITE"
            FontSize="14"
            FontAttributes="Bold" />
-                        <BoxView Color="Gray"
+                        <BoxView 
              HeightRequest="2"
              HorizontalOptions="Fill" />
                 
@@ -111,7 +107,7 @@
                         <Label Text="READ"
            FontSize="14"
            FontAttributes="Bold" />
-                        <BoxView Color="Gray"
+                        <BoxView
              HeightRequest="2"
              HorizontalOptions="Fill" />
 
@@ -136,6 +132,7 @@
                     </VerticalStackLayout>
                 </Frame>
             </HorizontalStackLayout>
+            <ProgressBar  x:Name="TransfertProgress" Progress="0.1" VerticalOptions="FillAndExpand" WidthRequest="200"></ProgressBar>
         </VerticalStackLayout>
     </ScrollView>
 
