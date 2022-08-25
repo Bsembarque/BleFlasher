@@ -273,50 +273,59 @@ namespace BleFlasher
             return false;
         }
 
-        public async void writeHexFile(Stream filestream)
+        public async Task writeHexFile(Stream filestream)
         {
-            uint start_address = UInt32.MaxValue;
-            uint end_address = UInt32.MinValue;
-
             filestream.Position = 0;
-            using (IntelHexReader hexReader = new IntelHexReader(filestream))
+            using (var hexReader = new IntelHexStreamReader(filestream))
             {
-                uint address;
-                IList<byte> data;
-  
-                // NEXT LINES
-                while (hexReader.Read(out address, out data))
+                List<byte> segmentData = new List<byte>();
+                uint segmentAddress = 0;
+
+                try
                 {
-                    if (data.Count > 0)
+
+                    hexReader.BaseStream.Position = 0;
+
+                    // NEXT LINES
+                    while (hexReader.EndOfStream == false)
                     {
-                        if (start_address > address)
+                        var hexrecord = hexReader.ReadHexRecord();
+
+                        if (hexrecord.RecordType == IntelHexRecordType.Data)
                         {
-                            start_address = address;
+                            segmentData.AddRange(hexrecord.Data);
+                        }
+                        else if(segmentData.Count > 0) {
+                            await erase(segmentAddress, ((uint)segmentData.Count));
+                            await write(segmentAddress, segmentData.ToArray());
+                            segmentData.Clear();
                         }
 
-                        if (end_address < address + ((uint)data.Count))
+                        if (hexrecord.RecordType == IntelHexRecordType.ExtendedLinearAddress)
                         {
-                            end_address = address + ((uint)data.Count);
+                            segmentAddress = (uint)hexReader.State.UpperLinearBaseAddress << 16 | hexReader.State.UpperSegmentBaseAddress;
+                            segmentData.Clear();
                         }
+
+                        if (hexrecord.RecordType == IntelHexRecordType.StartLinearAddress)
+                        {
+                            segmentAddress = hexReader.State.ExtendedInstructionPointer;
+                            segmentData.Clear();
+                        }
+
                     }
                 }
-
-                byte[] fulldata = new byte[end_address - start_address];
-                Array.Fill<byte>(fulldata, 0xFF);
-                filestream.Position = 0;
-
-                // NEXT LINES
-                while (hexReader.Read(out address, out data))
+                catch (HexIO.Exceptions.IntelHexStreamException ex)
                 {
-                    if (data.Count > 0)
-                    {
-                        data.CopyTo(fulldata, ((int)(address - start_address)));
-                    }
+                    Console.WriteLine(ex);
                 }
 
-                await erase(start_address, ((uint)fulldata.Length));
-                await write(start_address, fulldata.ToArray());
-
+                if (segmentData.Count > 0)
+                {
+                    await erase(segmentAddress, ((uint)segmentData.Count));
+                    await write(segmentAddress, segmentData.ToArray());
+                    segmentData.Clear();
+                }
             }
 
         }

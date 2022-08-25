@@ -5,11 +5,11 @@
 
     <ScrollView>
 
-            <VerticalStackLayout>
-            <HorizontalStackLayout>
+        <VerticalStackLayout HorizontalOptions="CenterAndExpand" Spacing="20" Padding="20" VerticalOptions="StartAndExpand">
+            <HorizontalStackLayout  >
                 <Frame  x:Name="ScanLayout">
 
-                    <VerticalStackLayout HorizontalOptions="CenterAndExpand">
+                    <VerticalStackLayout >
                         <Label Text="SCANNER"
            FontSize="14"
            FontAttributes="Bold" />
@@ -28,21 +28,21 @@
             Text="Stop scanning"
             Clicked="OnStopScanningClicked"
             HorizontalOptions="Center" />
-
+                            <ActivityIndicator IsRunning="{Binding isScanning}" />
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </Frame>
 
-                <Frame  x:Name="ConnectionLayout" >
+                <Frame  x:Name="ConnectionLayout">
 
-                    <VerticalStackLayout  HorizontalOptions="CenterAndExpand">
-                    <Label Text="CONNECTION"
+                    <VerticalStackLayout>
+                        <Label Text="CONNECTION"
            FontSize="14"
            FontAttributes="Bold" />
-                    <BoxView
+                        <BoxView
              HeightRequest="2"
              HorizontalOptions="Fill" />
-                    <HorizontalStackLayout>
+                        <HorizontalStackLayout>
 
                             <Picker 
             x:Name="PickerScan"
@@ -59,48 +59,48 @@
             Clicked="OnConnectClicked"
             HorizontalOptions="Center" />
 
-                        <Button
+                            <Button
             x:Name="DisconnectDevice"
             Text="Disconnect"
             Clicked="OnDisconnectClicked"
             HorizontalOptions="Center" />
-
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
+                            <ActivityIndicator IsRunning="false" x:Name="ActivityC" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
             </HorizontalStackLayout>
 
             <HorizontalStackLayout x:Name="ConnectedLayout" IsVisible="False" >
                 <Frame>
-                <VerticalStackLayout>
-                    <Label Text="WRITE"
+                    <VerticalStackLayout>
+                        <Label Text="WRITE"
            FontSize="14"
            FontAttributes="Bold" />
                         <BoxView 
              HeightRequest="2"
              HorizontalOptions="Fill" />
-                
-                <Label Text="File name" />
 
-                <Entry x:Name="FileName" />
+                        <Label Text="File name" />
 
-                <Button
+                        <Entry x:Name="FileName" />
+
+                        <Button
                 x:Name="SelectFile"
                 Text="Select file"
                 Clicked="OnSelectFileClicked"
                 HorizontalOptions="Center" />
-                <Label Text="Start address" />
-                <Entry x:Name="StartAddress" >
+                        <Label Text="Start address" />
+                        <Entry x:Name="StartAddress" >
 
-                </Entry>
+                        </Entry>
 
-                <Button
+                        <Button
                 x:Name="Write"
                 Text="Write"
                 Clicked="OnWriteClicked"
                 HorizontalOptions="Center" />
-                </VerticalStackLayout>
-            </Frame>
+                    </VerticalStackLayout>
+                </Frame>
 
                 <Frame>
                     <VerticalStackLayout>
@@ -120,7 +120,7 @@
                 Text="Select file"
                 Clicked="OnSelectFileClicked"
                 HorizontalOptions="Center" />
-                        
+
                         <Label Text="Start address" />
                         <Entry x:Name="StartAddressR"/>
                         <Entry x:Name="SizeR" />
@@ -132,8 +132,9 @@
                     </VerticalStackLayout>
                 </Frame>
             </HorizontalStackLayout>
-            <ProgressBar  x:Name="TransfertProgress" Progress="0.1" VerticalOptions="FillAndExpand" WidthRequest="200"></ProgressBar>
+            <ActivityIndicator IsRunning="false" x:Name="ActivityR" />
+            <ProgressBar  x:Name="TransfertProgress" Progress="0.0" HeightRequest="50" HorizontalOptions="Fill"></ProgressBar>
+
         </VerticalStackLayout>
     </ScrollView>
-
 </ContentPage>

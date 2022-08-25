@@ -6,6 +6,14 @@ public partial class MainPage : ContentPage
     BleFlasher flasher;
     Stream filestream;
 
+    public bool isScanning
+    {
+        get{ 
+            if (flasher != null)
+                return flasher.isScanning();
+            return false;
+         }
+    }
     public MainPage()
 	{
 		InitializeComponent();
@@ -22,7 +30,6 @@ public partial class MainPage : ContentPage
         flasher.ProgressionUpdated -= Flasher_ProgressionUpdated;
 
 
-
         StartScanning.IsVisible = false;
         StopScanning.IsVisible = true;
         ConnectDevice.IsVisible = false;
@@ -35,6 +42,7 @@ public partial class MainPage : ContentPage
 
         flasher.startScanning();
 
+
     }
 
     private void Flasher_ProgressionUpdated(object sender, double e)
@@ -45,10 +53,9 @@ public partial class MainPage : ContentPage
 
     private void Flasher_DiscoveredDevice(object sender, InTheHand.Bluetooth.BluetoothDevice d)
     {
-        Dispatcher.Dispatch(() =>
-        {
+       
             ConnectDevice.IsVisible = true;
-        });
+     
         string name = d.Name + "(" + d.Id + ")";
         PickerScan.Items.Add(name);
         PickerScan.SelectedIndex = 0;
@@ -61,10 +68,13 @@ public partial class MainPage : ContentPage
 
         StartScanning.IsVisible = true;
         StopScanning.IsVisible = false;
+
     }
 
     private async void OnConnectClicked(object sender, EventArgs e)
     {
+        ActivityC.IsRunning = true;
+        flasher.stopScanning();
 
         var device = flasher.GetDevices()[PickerScan.SelectedIndex];
         if(await flasher.connect(device))
@@ -76,38 +86,45 @@ public partial class MainPage : ContentPage
         {
             ConnectedLayout.IsVisible = false;
         }
+        ActivityC.IsRunning = false;
     }
     private void OnDisconnectClicked(object sender, EventArgs e)
     {
         flasher.disconnect();
         ConnectedLayout.IsVisible = false;
+        ActivityC.IsRunning = false;
     }
 
 
     private async void OnWriteClicked(object sender, EventArgs e)
     {
+        ActivityR.IsRunning = true;
 
-        if (flasher.isBinaryFile(filestream))
+        Dispatcher.Dispatch(async () =>
         {
-            if(StartAddress.Text != null)
+
+            if (flasher.isBinaryFile(filestream))
             {
-                uint start_address = 0;
-                if (StartAddress.Text.Contains("x"))
+                if (StartAddress.Text != null)
                 {
-                    start_address = Convert.ToUInt32(StartAddress.Text, 16);
+                    uint start_address = 0;
+                    if (StartAddress.Text.Contains("x"))
+                    {
+                        start_address = Convert.ToUInt32(StartAddress.Text, 16);
+                    }
+                    else
+                    {
+                        start_address = Convert.ToUInt32(StartAddress.Text, 10);
+                    }
+                    await flasher.writeBinaryFile(start_address, filestream);
                 }
-                else
-                {
-                    start_address = Convert.ToUInt32(StartAddress.Text, 10);
-                }
-                await flasher.writeBinaryFile(start_address, filestream);
             }
-        }
-        else
-        {
-            flasher.writeHexFile(filestream);
-        }
-
+            else
+            {
+               await flasher.writeHexFile(filestream);
+            }
+            ActivityR.IsRunning = false;
+        });
     }
 
 
