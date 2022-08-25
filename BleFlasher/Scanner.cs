@@ -18,7 +18,7 @@ namespace BleFlasher
         List<BleDevice> devices;
         private InTheHand.Bluetooth.BluetoothLEScan scan;  
 
-        public async void startScanning()
+        public async Task startScanning()
         {
             devices = new List<BleDevice>();
 
@@ -53,7 +53,7 @@ namespace BleFlasher
             }
         }
 
-        public  void stopScanning()
+        public async Task stopScanning()
         {
             scan.Stop();
 

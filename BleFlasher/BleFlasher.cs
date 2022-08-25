@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 #if ANDROID
 using Android.Locations;
+
 #endif
 using HexIO;
 
@@ -187,21 +188,21 @@ namespace BleFlasher
             ProgressionUpdated.Invoke(this, getProgression());
 
             /* COMMAND read */
-            for (int i = 0; i < size; i++)
+            for (int i = 0; i < size; i += Frame.MAX_PAYLOAD)
             {
-                if (i - size > Frame.MAX_PAYLOAD)
+                if (size-i > Frame.MAX_PAYLOAD)
                 {
-                    current_request = new Frame(Frame.COMMAND_LIST.COMMAND_READ, base_adresse, Frame.MAX_PAYLOAD);
+                    current_request = new Frame(Frame.COMMAND_LIST.COMMAND_READ, base_adresse+((uint)i), Frame.MAX_PAYLOAD);
                 }
                 else
                 {
-                    current_request = new Frame(Frame.COMMAND_LIST.COMMAND_READ, base_adresse, (uint)(i - size));
+                    current_request = new Frame(Frame.COMMAND_LIST.COMMAND_READ, base_adresse + ((uint)i), (uint)(size-i));
                 }
 
                 await send_Frame(current_request);
 
                 // WAIT FOR DATA
-                var incomming_data = await waitForData(200);
+                var incomming_data = await waitForData(2000);
                 if (incomming_data != null)
                 {
                     data.AddRange(incomming_data);
@@ -293,6 +294,10 @@ namespace BleFlasher
 
                         if (hexrecord.RecordType == IntelHexRecordType.Data)
                         {
+                            if (segmentData.Count == 0)
+                            {
+                                segmentAddress += hexrecord.Offset;
+                            }
                             segmentData.AddRange(hexrecord.Data);
                         }
                         else if(segmentData.Count > 0) {
@@ -329,6 +334,42 @@ namespace BleFlasher
             }
 
         }
+
+        public async Task ReadToBinaryFile(Stream filestream, uint start_address, uint size)
+        {
+            var data = await read(start_address, size);
+            filestream.Write(data, 0, data.Length);
+        }
+
+        public async Task ReadToHexFile(Stream filestream, uint start_address, uint size)
+        {
+            using( var hexwriter = new IntelHexStreamWriter(filestream))
+            {
+
+                var data = await read(start_address, size);
+                
+
+
+                var datachunks = data.Chunk(16);
+                hexwriter.WriteExtendedLinearAddressRecord(((ushort)(start_address >> 16)));
+                ushort offset = (((ushort)start_address));
+
+                foreach (var chunk in datachunks) {
+                    hexwriter.WriteDataRecord(offset, chunk);
+
+                    start_address += 16;
+                    offset += 16;
+                    if (offset == 0)
+                    {
+                        hexwriter.WriteExtendedLinearAddressRecord(((ushort)(start_address >> 16)));
+                    }
+                }
+            }
+
+
+        }
+
+
         public uint getSpeedTransfert()
         {
             return 0;

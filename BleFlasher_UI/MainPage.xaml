@@ -118,7 +118,7 @@
                         <Button
                 x:Name="SelectFileR"
                 Text="Select file"
-                Clicked="OnSelectFileClicked"
+                Clicked="OnCreateFileClicked"
                 HorizontalOptions="Center" />
 
                         <Label Text="Start address" />
@@ -128,6 +128,7 @@
                         <Button
                 x:Name="Read"
                 Text="Read"
+                Clicked="OnReadClicked"
                 HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </Frame>

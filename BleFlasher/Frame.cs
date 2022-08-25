@@ -20,7 +20,7 @@
                 COMMAND_ERR,
             };
 
-            public const int HEADER_SIZE = 10;
+            public const int HEADER_SIZE = 16;
             public const int MAX_PAYLOAD = 128;
             public const uint DEFAULT_ADDRESS = uint.MaxValue;
 
